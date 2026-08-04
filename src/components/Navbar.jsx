@@ -31,36 +31,37 @@ export default function Navbar({
   ];
 
   return (
-    <header className="navbar-container glass-card" style={{ padding: '0.875rem 1.5rem', borderRadius: '0 0 16px 16px', marginBottom: '1.5rem' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+    <header className="navbar-container glass-card">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.875rem' }}>
         
         {/* Brand Logo & Name */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
           <div style={{
-            width: '40px',
-            height: '40px',
-            borderRadius: '12px',
+            width: '38px',
+            height: '38px',
+            borderRadius: '10px',
             background: 'linear-gradient(135deg, #10b981 0%, #3b82f6 100%)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             color: '#ffffff',
-            boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+            boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+            flexShrink: 0
           }}>
-            <Wallet size={22} />
+            <Wallet size={20} />
           </div>
           <div>
-            <h1 style={{ fontSize: '1.25rem', fontWeight: '700', letterSpacing: '-0.02em', margin: 0 }}>
+            <h1 style={{ fontSize: '1.125rem', fontWeight: '700', letterSpacing: '-0.02em', margin: 0, lineHeight: 1.1 }}>
               Cash<span style={{ color: 'var(--accent-cr)' }}>Tracker</span>
             </h1>
-            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>
-              Fast, Serverless & Private
+            <p style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', margin: 0 }}>
+              Smart Income & Expense Management
             </p>
           </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <nav style={{ display: 'flex', gap: '0.375rem', background: 'var(--bg-input)', padding: '0.25rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+        {/* Navigation Tabs - Touch Scrollable on Mobile */}
+        <nav className="nav-tabs-wrapper">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
@@ -73,10 +74,12 @@ export default function Navbar({
                   borderRadius: '8px',
                   background: isActive ? 'var(--primary-brand)' : 'transparent',
                   color: isActive ? '#ffffff' : 'var(--text-secondary)',
-                  padding: '0.5rem 0.875rem'
+                  padding: '0.4rem 0.75rem',
+                  fontSize: '0.8125rem',
+                  whiteSpace: 'nowrap'
                 }}
               >
-                <Icon size={16} />
+                <Icon size={15} />
                 <span>{item.label}</span>
               </button>
             );
@@ -84,40 +87,40 @@ export default function Navbar({
         </nav>
 
         {/* Right Actions: Theme Toggle, Settings, User Badge & Logout */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
           <button
             onClick={toggleTheme}
             className="btn btn-ghost btn-sm"
             title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-            style={{ borderRadius: '50%', width: '38px', height: '38px', padding: 0 }}
+            style={{ borderRadius: '50%', width: '36px', height: '36px', padding: 0 }}
           >
-            {theme === 'dark' ? <Sun size={18} color="#f59e0b" /> : <Moon size={18} color="#6366f1" />}
+            {theme === 'dark' ? <Sun size={17} color="#f59e0b" /> : <Moon size={17} color="#6366f1" />}
           </button>
 
           <button
             onClick={onOpenSettings}
             className="btn btn-ghost btn-sm"
             title="Settings & Data Management"
-            style={{ borderRadius: '50%', width: '38px', height: '38px', padding: 0 }}
+            style={{ borderRadius: '50%', width: '36px', height: '36px', padding: 0 }}
           >
-            <Settings size={18} />
+            <Settings size={17} />
           </button>
 
           {currentUser && (
             <div style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '0.5rem',
-              padding: '0.375rem 0.75rem',
+              gap: '0.375rem',
+              padding: '0.25rem 0.625rem',
               borderRadius: '20px',
               background: 'var(--bg-input)',
               border: '1px solid var(--border-color)',
-              fontSize: '0.8125rem',
+              fontSize: '0.75rem',
               fontWeight: '600'
             }}>
               <div style={{
-                width: '26px',
-                height: '26px',
+                width: '24px',
+                height: '24px',
                 borderRadius: '50%',
                 background: 'var(--primary-brand)',
                 color: '#ffffff',
@@ -127,16 +130,18 @@ export default function Navbar({
                 fontSize: '0.75rem',
                 fontWeight: '700'
               }}>
-                {currentUser.name ? currentUser.name.charAt(0).toUpperCase() : <User size={14} />}
+                {currentUser.name ? currentUser.name.charAt(0).toUpperCase() : <User size={12} />}
               </div>
-              <span>{currentUser.name || currentUser.username}</span>
+              <span style={{ maxWidth: '90px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {currentUser.name || currentUser.username}
+              </span>
               <button
                 onClick={onLogout}
                 className="btn btn-ghost btn-sm"
                 title="Sign Out"
-                style={{ padding: '0.25rem', color: 'var(--accent-dr)', borderRadius: '50%', marginLeft: '0.25rem' }}
+                style={{ padding: '0.2rem', color: 'var(--accent-dr)', borderRadius: '50%', minHeight: 'auto' }}
               >
-                <LogOut size={16} />
+                <LogOut size={14} />
               </button>
             </div>
           )}
@@ -146,4 +151,3 @@ export default function Navbar({
     </header>
   );
 }
-

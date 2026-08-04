@@ -9,18 +9,18 @@ import AuthModal from './components/AuthModal';
 import SettingsModal from './components/SettingsModal';
 
 import {
-  getCategories,
-  addCategory,
-  deleteCategory,
-  saveCategories,
-  getTransactions,
-  addTransaction,
-  addBulkTransactions,
-  updateTransaction,
-  deleteTransaction,
-  getCurrentUser,
-  logoutUser,
-} from './utils/storage';
+  getCategoriesAPI,
+  addCategoryAPI,
+  deleteCategoryAPI,
+  bulkAddCategoriesAPI,
+  getTransactionsAPI,
+  addTransactionAPI,
+  addBulkTransactionsAPI,
+  updateTransactionAPI,
+  deleteTransactionAPI,
+} from './utils/api';
+
+import { getCurrentUser, logoutUser } from './utils/storage';
 
 export default function App() {
   const [theme, setTheme] = useState(() => {
@@ -46,9 +46,15 @@ export default function App() {
     }
   }, [currentUser]);
 
-  const refreshData = () => {
-    setCategories(getCategories());
-    setTransactions(getTransactions());
+  const refreshData = async () => {
+    try {
+      const fetchedCats = await getCategoriesAPI();
+      const fetchedTxs = await getTransactionsAPI();
+      setCategories(fetchedCats || []);
+      setTransactions(fetchedTxs || []);
+    } catch (err) {
+      console.error('Error refreshing data from API:', err);
+    }
   };
 
   const toggleTheme = () => {
@@ -69,53 +75,40 @@ export default function App() {
   };
 
   // Category Operations
-  const handleAddCategory = (cat) => {
-    addCategory(cat);
-    setCategories(getCategories());
+  const handleAddCategory = async (cat) => {
+    await addCategoryAPI(cat);
+    refreshData();
   };
 
-  const handleDeleteCategory = (id) => {
-    deleteCategory(id);
-    setCategories(getCategories());
+  const handleDeleteCategory = async (id) => {
+    await deleteCategoryAPI(id);
+    refreshData();
   };
 
-  const handleBulkAddCategories = (newCats) => {
-    const current = getCategories();
-    const merged = [...current];
-
-    newCats.forEach((nc) => {
-      if (!merged.some((c) => c.name.toLowerCase() === nc.name.toLowerCase())) {
-        merged.push({
-          id: `cat_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
-          name: nc.name,
-          type: nc.type,
-        });
-      }
-    });
-
-    saveCategories(merged);
-    setCategories(merged);
+  const handleBulkAddCategories = async (newCats) => {
+    await bulkAddCategoriesAPI(newCats);
+    refreshData();
   };
 
   // Transaction Operations
-  const handleAddTransaction = (tx) => {
-    addTransaction(tx);
-    setTransactions(getTransactions());
+  const handleAddTransaction = async (tx) => {
+    await addTransactionAPI(tx);
+    refreshData();
   };
 
-  const handleAddBulkTransactions = (txList) => {
-    addBulkTransactions(txList);
-    setTransactions(getTransactions());
+  const handleAddBulkTransactions = async (txList) => {
+    await addBulkTransactionsAPI(txList);
+    refreshData();
   };
 
-  const handleUpdateTransaction = (tx) => {
-    updateTransaction(tx);
-    setTransactions(getTransactions());
+  const handleUpdateTransaction = async (tx) => {
+    await updateTransactionAPI(tx);
+    refreshData();
   };
 
-  const handleDeleteTransaction = (id) => {
-    deleteTransaction(id);
-    setTransactions(getTransactions());
+  const handleDeleteTransaction = async (id) => {
+    await deleteTransactionAPI(id);
+    refreshData();
   };
 
   return (
@@ -198,9 +191,8 @@ export default function App() {
         borderTop: '1px solid var(--border-color)',
         marginTop: '2rem'
       }}>
-        <p>Cash Tracker — Multi-User Privacy-First Front-End Application</p>
+        <p>Cash Tracker — Express & MongoDB Atlas Backend with Local Storage Fallback</p>
       </footer>
     </div>
   );
 }
-

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { User, Lock, LogIn, UserPlus, AlertCircle, ShieldCheck } from 'lucide-react';
-import { loginUser, registerUser } from '../utils/storage';
+import { loginUserAPI, registerUserAPI } from '../utils/api';
+import { saveUsers, getUsers } from '../utils/storage';
 
 export default function AuthModal({ onAuthSuccess }) {
   const [mode, setMode] = useState('login'); // 'login' | 'register'
@@ -16,23 +17,38 @@ export default function AuthModal({ onAuthSuccess }) {
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
 
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
     if (!loginUsername.trim() || !loginPassword) {
       setError('Please enter both username and password.');
       return;
     }
-    const res = loginUser(loginUsername, loginPassword);
-    if (res.success) {
-      onAuthSuccess(res.user);
-    } else {
-      setError(res.error);
+    setLoading(true);
+    try {
+      const res = await loginUserAPI(loginUsername, loginPassword);
+      if (res && res.success) {
+        // Cache user in localStorage for active session
+        localStorage.setItem('cashtracker_active_user', res.user.id);
+        const currentUsers = getUsers();
+        if (!currentUsers.some((u) => u.id === res.user.id)) {
+          currentUsers.push(res.user);
+          saveUsers(currentUsers);
+        }
+        onAuthSuccess(res.user);
+      } else {
+        setError(res ? res.error : 'Invalid login credentials.');
+      }
+    } catch (err) {
+      setError('Failed to log in. Please check connection.');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
     setError('');
     if (!regName.trim() || !regUsername.trim() || !regPassword) {
@@ -47,45 +63,59 @@ export default function AuthModal({ onAuthSuccess }) {
       setError('Passwords do not match.');
       return;
     }
-    const res = registerUser({
-      name: regName,
-      username: regUsername,
-      password: regPassword,
-    });
-    if (res.success) {
-      onAuthSuccess(res.user);
-    } else {
-      setError(res.error);
+    setLoading(true);
+    try {
+      const res = await registerUserAPI({
+        name: regName,
+        username: regUsername,
+        password: regPassword,
+      });
+      if (res && res.success) {
+        // Cache user in localStorage for active session
+        localStorage.setItem('cashtracker_active_user', res.user.id);
+        const currentUsers = getUsers();
+        if (!currentUsers.some((u) => u.id === res.user.id)) {
+          currentUsers.push(res.user);
+          saveUsers(currentUsers);
+        }
+        onAuthSuccess(res.user);
+      } else {
+        setError(res ? res.error : 'Registration failed.');
+      }
+    } catch (err) {
+      setError('Failed to register. Please check connection.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="modal-overlay" style={{ background: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(8px)', zIndex: 1000 }}>
-      <div className="modal-content glass-card" style={{ maxWidth: '440px', width: '90%', padding: '2rem' }}>
+      <div className="modal-content glass-card" style={{ maxWidth: '440px', width: '92%', padding: '1.75rem' }}>
         
         {/* Header Icon */}
         <div style={{
-          width: '60px',
-          height: '60px',
+          width: '56px',
+          height: '56px',
           borderRadius: '16px',
           background: 'linear-gradient(135deg, #10b981 0%, #3b82f6 100%)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           color: '#ffffff',
-          margin: '0 auto 1.25rem auto',
+          margin: '0 auto 1rem auto',
           boxShadow: '0 8px 20px rgba(16, 185, 129, 0.3)'
         }}>
-          <ShieldCheck size={32} />
+          <ShieldCheck size={28} />
         </div>
 
-        <h2 style={{ fontSize: '1.5rem', fontWeight: '700', textAlign: 'center', marginBottom: '0.25rem' }}>
+        <h2 style={{ fontSize: '1.35rem', fontWeight: '700', textAlign: 'center', marginBottom: '0.25rem' }}>
           {mode === 'login' ? 'Welcome Back' : 'Create an Account'}
         </h2>
-        <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', textAlign: 'center', marginBottom: '1.5rem' }}>
+        <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', textAlign: 'center', marginBottom: '1.25rem' }}>
           {mode === 'login'
-            ? 'Sign in to access your financial records'
-            : 'Register your account to start managing cash flow'}
+            ? 'Sign in to access your financial records across devices'
+            : 'Register your account to sync cash tracker data with MongoDB Atlas'}
         </p>
 
         {/* Auth Mode Tabs */}
@@ -94,191 +124,152 @@ export default function AuthModal({ onAuthSuccess }) {
           background: 'var(--bg-input)',
           borderRadius: '10px',
           padding: '0.25rem',
-          marginBottom: '1.5rem',
+          marginBottom: '1.25rem',
           border: '1px solid var(--border-color)'
         }}>
           <button
-            type="button"
             onClick={() => { setMode('login'); setError(''); }}
             className={`btn btn-sm ${mode === 'login' ? 'btn-primary' : 'btn-ghost'}`}
-            style={{
-              flex: 1,
-              borderRadius: '8px',
-              background: mode === 'login' ? 'var(--primary-brand)' : 'transparent',
-              color: mode === 'login' ? '#fff' : 'var(--text-secondary)'
-            }}
+            style={{ flex: 1, borderRadius: '8px', padding: '0.5rem' }}
           >
-            <LogIn size={16} />
+            <LogIn size={15} />
             <span>Sign In</span>
           </button>
           <button
-            type="button"
             onClick={() => { setMode('register'); setError(''); }}
             className={`btn btn-sm ${mode === 'register' ? 'btn-primary' : 'btn-ghost'}`}
-            style={{
-              flex: 1,
-              borderRadius: '8px',
-              background: mode === 'register' ? 'var(--primary-brand)' : 'transparent',
-              color: mode === 'register' ? '#fff' : 'var(--text-secondary)'
-            }}
+            style={{ flex: 1, borderRadius: '8px', padding: '0.5rem' }}
           >
-            <UserPlus size={16} />
+            <UserPlus size={15} />
             <span>Register</span>
           </button>
         </div>
 
-        {/* Error Notification */}
+        {/* Error Alert */}
         {error && (
           <div style={{
             display: 'flex',
             alignItems: 'center',
             gap: '0.5rem',
-            padding: '0.75rem 1rem',
-            borderRadius: '10px',
+            padding: '0.625rem 0.875rem',
+            borderRadius: '8px',
             background: 'var(--accent-dr-bg)',
             border: '1px solid var(--accent-dr-border)',
             color: 'var(--accent-dr)',
             fontSize: '0.8125rem',
             marginBottom: '1.25rem'
           }}>
-            <AlertCircle size={18} />
+            <AlertCircle size={16} />
             <span>{error}</span>
           </div>
         )}
 
         {/* LOGIN FORM */}
         {mode === 'login' && (
-          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <form onSubmit={handleLogin}>
             <div className="form-group">
-              <label className="form-label">Username</label>
-              <div style={{ position: 'relative' }}>
-                <input
-                  type="text"
-                  required
-                  value={loginUsername}
-                  onChange={(e) => setLoginUsername(e.target.value)}
-                  placeholder="Enter username"
-                  className="form-control"
-                  style={{ paddingLeft: '2.5rem' }}
-                  autoFocus
-                />
-                <User size={18} style={{ position: 'absolute', left: '0.875rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Password</label>
-              <div style={{ position: 'relative' }}>
-                <input
-                  type="password"
-                  required
-                  value={loginPassword}
-                  onChange={(e) => setLoginPassword(e.target.value)}
-                  placeholder="Enter password"
-                  className="form-control"
-                  style={{ paddingLeft: '2.5rem' }}
-                />
-                <Lock size={18} style={{ position: 'absolute', left: '0.875rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-              </div>
-            </div>
-
-            <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '0.75rem', fontSize: '1rem', marginTop: '0.5rem' }}>
-              <LogIn size={18} />
-              <span>Sign In</span>
-            </button>
-
-            <p style={{ textAlign: 'center', fontSize: '0.8125rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
-              Don't have an account?{' '}
-              <button
-                type="button"
-                onClick={() => { setMode('register'); setError(''); }}
-                style={{ background: 'none', border: 'none', color: 'var(--primary-brand)', cursor: 'pointer', fontWeight: '600', padding: 0 }}
-              >
-                Register now
-              </button>
-            </p>
-          </form>
-        )}
-
-        {/* REGISTER FORM */}
-        {mode === 'register' && (
-          <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div className="form-group">
-              <label className="form-label">Full Name</label>
+              <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                <User size={14} />
+                <span>Username</span>
+              </label>
               <input
                 type="text"
-                required
-                value={regName}
-                onChange={(e) => setRegName(e.target.value)}
-                placeholder="e.g. Alex Morgan"
+                placeholder="Enter your username"
+                value={loginUsername}
+                onChange={(e) => setLoginUsername(e.target.value)}
                 className="form-control"
+                required
                 autoFocus
               />
             </div>
 
             <div className="form-group">
-              <label className="form-label">Choose Username</label>
-              <div style={{ position: 'relative' }}>
-                <input
-                  type="text"
-                  required
-                  value={regUsername}
-                  onChange={(e) => setRegUsername(e.target.value)}
-                  placeholder="e.g. alex_m"
-                  className="form-control"
-                  style={{ paddingLeft: '2.5rem' }}
-                />
-                <User size={18} style={{ position: 'absolute', left: '0.875rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-              </div>
+              <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                <Lock size={14} />
+                <span>Password</span>
+              </label>
+              <input
+                type="password"
+                placeholder="••••••••"
+                value={loginPassword}
+                onChange={(e) => setLoginPassword(e.target.value)}
+                className="form-control"
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn btn-primary"
+              style={{ width: '100%', padding: '0.75rem', fontSize: '0.9375rem', marginTop: '0.5rem' }}
+            >
+              {loading ? 'Signing In...' : 'Sign In to Dashboard'}
+            </button>
+          </form>
+        )}
+
+        {/* REGISTER FORM */}
+        {mode === 'register' && (
+          <form onSubmit={handleRegister}>
+            <div className="form-group">
+              <label className="form-label">Full Name</label>
+              <input
+                type="text"
+                placeholder="e.g. Varun Akshay"
+                value={regName}
+                onChange={(e) => setRegName(e.target.value)}
+                className="form-control"
+                required
+              />
             </div>
 
             <div className="form-group">
-              <label className="form-label">Password</label>
-              <div style={{ position: 'relative' }}>
+              <label className="form-label">Desired Username</label>
+              <input
+                type="text"
+                placeholder="e.g. varunakshay"
+                value={regUsername}
+                onChange={(e) => setRegUsername(e.target.value)}
+                className="form-control"
+                required
+              />
+            </div>
+
+            <div className="grid-2" style={{ gap: '0.75rem' }}>
+              <div className="form-group">
+                <label className="form-label">Password</label>
                 <input
                   type="password"
-                  required
+                  placeholder="••••••••"
                   value={regPassword}
                   onChange={(e) => setRegPassword(e.target.value)}
-                  placeholder="At least 4 characters"
                   className="form-control"
-                  style={{ paddingLeft: '2.5rem' }}
+                  required
                 />
-                <Lock size={18} style={{ position: 'absolute', left: '0.875rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
               </div>
-            </div>
 
-            <div className="form-group">
-              <label className="form-label">Confirm Password</label>
-              <div style={{ position: 'relative' }}>
+              <div className="form-group">
+                <label className="form-label">Confirm Password</label>
                 <input
                   type="password"
-                  required
+                  placeholder="••••••••"
                   value={regConfirmPassword}
                   onChange={(e) => setRegConfirmPassword(e.target.value)}
-                  placeholder="Re-enter password"
                   className="form-control"
-                  style={{ paddingLeft: '2.5rem' }}
+                  required
                 />
-                <Lock size={18} style={{ position: 'absolute', left: '0.875rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
               </div>
             </div>
 
-            <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '0.75rem', fontSize: '1rem', marginTop: '0.5rem' }}>
-              <UserPlus size={18} />
-              <span>Create Account</span>
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn btn-success"
+              style={{ width: '100%', padding: '0.75rem', fontSize: '0.9375rem', marginTop: '0.5rem' }}
+            >
+              {loading ? 'Creating Account...' : 'Create Account & Login'}
             </button>
-
-            <p style={{ textAlign: 'center', fontSize: '0.8125rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
-              Already have an account?{' '}
-              <button
-                type="button"
-                onClick={() => { setMode('login'); setError(''); }}
-                style={{ background: 'none', border: 'none', color: 'var(--primary-brand)', cursor: 'pointer', fontWeight: '600', padding: 0 }}
-              >
-                Sign in
-              </button>
-            </p>
           </form>
         )}
 
@@ -286,4 +277,3 @@ export default function AuthModal({ onAuthSuccess }) {
     </div>
   );
 }
-

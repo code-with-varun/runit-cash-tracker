@@ -2,13 +2,9 @@ import React, { useState } from 'react';
 import {
   History,
   Search,
-  Filter,
   Download,
   Trash2,
   Edit2,
-  Calendar,
-  X,
-  Check,
   AlertTriangle,
 } from 'lucide-react';
 import { exportTransactionsToExcel } from '../utils/excel';
@@ -21,6 +17,9 @@ export default function TransactionHistory({
   onDeleteTransaction,
 }) {
   const todayStr = getTodayString();
+
+  const crCategories = categories ? categories.filter((c) => c.type === 'Cr') : [];
+  const drCategories = categories ? categories.filter((c) => c.type === 'Dr') : [];
 
   // Filters State
   const [searchTerm, setSearchTerm] = useState('');
@@ -79,56 +78,57 @@ export default function TransactionHistory({
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
       
       {/* Header & Export Banner */}
       <div className="glass-card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.875rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div style={{
-              width: '42px',
-              height: '42px',
-              borderRadius: '12px',
+              width: '40px',
+              height: '40px',
+              borderRadius: '10px',
               background: 'var(--primary-brand-bg)',
               color: 'var(--primary-brand)',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              flexShrink: 0
             }}>
-              <History size={22} />
+              <History size={20} />
             </div>
             <div>
-              <h2 style={{ fontSize: '1.25rem', margin: 0 }}>Transaction History & Ledger</h2>
-              <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', margin: 0 }}>
+              <h2 style={{ fontSize: '1.125rem', margin: 0 }}>Transaction History & Ledger</h2>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>
                 Showing {filteredTransactions.length} of {transactions.length} total records.
               </p>
             </div>
           </div>
 
-          <button onClick={handleExportExcel} className="btn btn-secondary btn-sm">
-            <Download size={16} />
+          <button onClick={handleExportExcel} className="btn btn-secondary btn-sm" style={{ width: 'auto' }}>
+            <Download size={15} />
             <span>Export to Excel (.xlsx)</span>
           </button>
         </div>
       </div>
 
       {/* Filter Toolbar Card */}
-      <div className="glass-card" style={{ padding: '1.25rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', alignItems: 'end' }}>
+      <div className="glass-card" style={{ padding: '1rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.75rem', alignItems: 'end' }}>
           
           {/* Search Box */}
           <div className="form-group" style={{ margin: 0 }}>
             <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-              <Search size={14} />
+              <Search size={13} />
               <span>Search Notes / Cat</span>
             </label>
             <input
               type="text"
-              placeholder="Filter by keywords..."
+              placeholder="Keywords..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="form-control"
-              style={{ padding: '0.5rem 0.75rem', fontSize: '0.8125rem' }}
+              style={{ padding: '0.4rem 0.625rem', fontSize: '0.8125rem', minHeight: '36px' }}
             />
           </div>
 
@@ -139,7 +139,7 @@ export default function TransactionHistory({
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
               className="form-control"
-              style={{ padding: '0.5rem 0.75rem', fontSize: '0.8125rem' }}
+              style={{ padding: '0.4rem 0.625rem', fontSize: '0.8125rem', minHeight: '36px' }}
             >
               <option value="All">All Types</option>
               <option value="Cr">Credit (Cr) Only</option>
@@ -147,21 +147,34 @@ export default function TransactionHistory({
             </select>
           </div>
 
-          {/* Category Filter */}
+          {/* Category Filter with Optgroups */}
           <div className="form-group" style={{ margin: 0 }}>
             <label className="form-label">Category</label>
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
               className="form-control"
-              style={{ padding: '0.5rem 0.75rem', fontSize: '0.8125rem' }}
+              style={{ padding: '0.4rem 0.625rem', fontSize: '0.8125rem', minHeight: '36px' }}
             >
               <option value="All">All Categories</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
+              {crCategories.length > 0 && (
+                <optgroup label="🟢 Credit (Income)">
+                  {crCategories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+              {drCategories.length > 0 && (
+                <optgroup label="🔴 Debit (Expense)">
+                  {drCategories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
             </select>
           </div>
 
@@ -174,7 +187,7 @@ export default function TransactionHistory({
               value={fromDate}
               onChange={(e) => setFromDate(e.target.value)}
               className="form-control"
-              style={{ padding: '0.5rem 0.75rem', fontSize: '0.8125rem' }}
+              style={{ padding: '0.4rem 0.625rem', fontSize: '0.8125rem', minHeight: '36px' }}
             />
           </div>
 
@@ -187,7 +200,7 @@ export default function TransactionHistory({
               value={toDate}
               onChange={(e) => setToDate(e.target.value)}
               className="form-control"
-              style={{ padding: '0.5rem 0.75rem', fontSize: '0.8125rem' }}
+              style={{ padding: '0.4rem 0.625rem', fontSize: '0.8125rem', minHeight: '36px' }}
             />
           </div>
 
@@ -195,7 +208,7 @@ export default function TransactionHistory({
       </div>
 
       {/* Data Table */}
-      <div className="glass-card" style={{ padding: '1rem' }}>
+      <div className="glass-card" style={{ padding: '0.75rem' }}>
         <div className="table-responsive">
           <table className="custom-table">
             <thead>
@@ -205,15 +218,15 @@ export default function TransactionHistory({
                 <th>Type</th>
                 <th>Amount</th>
                 <th>Notes</th>
-                <th style={{ textAlign: 'center', width: '100px' }}>Actions</th>
+                <th style={{ textAlign: 'center', width: '90px' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredTransactions.length > 0 ? (
                 filteredTransactions.map((tx) => (
                   <tr key={tx.id}>
-                    <td style={{ fontWeight: '500' }}>{tx.date}</td>
-                    <td>{tx.categoryName}</td>
+                    <td style={{ fontWeight: '500', whiteSpace: 'nowrap' }}>{tx.date}</td>
+                    <td style={{ whiteSpace: 'nowrap' }}>{tx.categoryName}</td>
                     <td>
                       <span className={tx.type === 'Cr' ? 'badge badge-cr' : 'badge badge-dr'}>
                         {tx.type}
@@ -221,6 +234,7 @@ export default function TransactionHistory({
                     </td>
                     <td style={{
                       fontWeight: '700',
+                      whiteSpace: 'nowrap',
                       color: tx.type === 'Cr' ? 'var(--accent-cr)' : 'var(--text-primary)'
                     }}>
                       {tx.type === 'Cr' ? '+' : '-'}{formatCurrency(tx.amount)}
@@ -265,7 +279,7 @@ export default function TransactionHistory({
       {editingTx && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Edit Transaction Record</h3>
+            <h3 style={{ fontSize: '1.125rem', marginBottom: '1rem' }}>Edit Transaction Record</h3>
             <form onSubmit={handleSaveEdit}>
               <div className="form-group">
                 <label className="form-label">Category</label>
@@ -284,11 +298,24 @@ export default function TransactionHistory({
                   }}
                   className="form-control"
                 >
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name} ({c.type})
-                    </option>
-                  ))}
+                  {crCategories.length > 0 && (
+                    <optgroup label="🟢 Credit (Income)">
+                      {crCategories.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+                  {drCategories.length > 0 && (
+                    <optgroup label="🔴 Debit (Expense)">
+                      {drCategories.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
                 </select>
               </div>
 
@@ -328,7 +355,7 @@ export default function TransactionHistory({
                 />
               </div>
 
-              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
+              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.25rem' }}>
                 <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>
                   Save Changes
                 </button>
@@ -345,9 +372,9 @@ export default function TransactionHistory({
       {deleteConfirmId && (
         <div className="modal-overlay">
           <div className="modal-content" style={{ maxWidth: '400px', textAlign: 'center' }}>
-            <AlertTriangle size={36} color="var(--accent-dr)" style={{ margin: '0 auto 1rem auto' }} />
-            <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Delete Transaction?</h3>
-            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
+            <AlertTriangle size={32} color="var(--accent-dr)" style={{ margin: '0 auto 0.75rem auto' }} />
+            <h3 style={{ fontSize: '1.125rem', marginBottom: '0.5rem' }}>Delete Transaction?</h3>
+            <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>
               Are you sure you want to permanently remove this transaction entry from local storage?
             </p>
             <div style={{ display: 'flex', gap: '0.75rem' }}>

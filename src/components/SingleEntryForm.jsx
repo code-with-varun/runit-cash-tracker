@@ -15,6 +15,9 @@ export default function SingleEntryForm({ categories, onAddTransaction, onNaviga
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
+  const crCategories = categories ? categories.filter((c) => c.type === 'Cr') : [];
+  const drCategories = categories ? categories.filter((c) => c.type === 'Dr') : [];
+
   // Auto-select first category on load
   useEffect(() => {
     if (categories && categories.length > 0 && !categoryId) {
@@ -87,26 +90,27 @@ export default function SingleEntryForm({ categories, onAddTransaction, onNaviga
   };
 
   return (
-    <div style={{ maxWidth: '640px', margin: '0 auto' }}>
+    <div style={{ maxWidth: '640px', margin: '0 auto', width: '100%' }}>
       <div className="glass-card">
         
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.875rem' }}>
           <div style={{
-            width: '42px',
-            height: '42px',
-            borderRadius: '12px',
+            width: '38px',
+            height: '38px',
+            borderRadius: '10px',
             background: 'var(--primary-brand-bg)',
             color: 'var(--primary-brand)',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            flexShrink: 0
           }}>
-            <PlusCircle size={22} />
+            <PlusCircle size={20} />
           </div>
           <div>
-            <h2 style={{ fontSize: '1.25rem', margin: 0 }}>Single Transaction Entry</h2>
-            <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', margin: 0 }}>
+            <h2 style={{ fontSize: '1.125rem', margin: 0 }}>Single Transaction Entry</h2>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>
               Add a single income (Cr) or expense (Dr) entry to your ledger.
             </p>
           </div>
@@ -118,15 +122,15 @@ export default function SingleEntryForm({ categories, onAddTransaction, onNaviga
             display: 'flex',
             alignItems: 'center',
             gap: '0.5rem',
-            padding: '0.75rem 1rem',
+            padding: '0.625rem 0.875rem',
             borderRadius: '8px',
             background: 'var(--accent-dr-bg)',
             border: '1px solid var(--accent-dr-border)',
             color: 'var(--accent-dr)',
-            fontSize: '0.875rem',
-            marginBottom: '1.25rem'
+            fontSize: '0.8125rem',
+            marginBottom: '1rem'
           }}>
-            <AlertCircle size={18} />
+            <AlertCircle size={16} />
             <span>{errorMsg}</span>
           </div>
         )}
@@ -136,15 +140,15 @@ export default function SingleEntryForm({ categories, onAddTransaction, onNaviga
             display: 'flex',
             alignItems: 'center',
             gap: '0.5rem',
-            padding: '0.75rem 1rem',
+            padding: '0.625rem 0.875rem',
             borderRadius: '8px',
             background: 'var(--accent-cr-bg)',
             border: '1px solid var(--accent-cr-border)',
             color: 'var(--accent-cr)',
-            fontSize: '0.875rem',
-            marginBottom: '1.25rem'
+            fontSize: '0.8125rem',
+            marginBottom: '1rem'
           }}>
-            <CheckCircle size={18} />
+            <CheckCircle size={16} />
             <span>{successMsg}</span>
           </div>
         )}
@@ -155,7 +159,7 @@ export default function SingleEntryForm({ categories, onAddTransaction, onNaviga
           {/* Category Dropdown & Auto-Assigned Type */}
           <div className="form-group">
             <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
-              <Tag size={15} />
+              <Tag size={14} />
               <span>Select Category</span>
             </label>
             <select
@@ -164,11 +168,24 @@ export default function SingleEntryForm({ categories, onAddTransaction, onNaviga
               className="form-control"
               required
             >
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name} ({cat.type === 'Cr' ? 'Credit / Income' : 'Debit / Expense'})
-                </option>
-              ))}
+              {crCategories.length > 0 && (
+                <optgroup label="🟢 Credit (Income)">
+                  {crCategories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+              {drCategories.length > 0 && (
+                <optgroup label="🔴 Debit (Expense)">
+                  {drCategories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
             </select>
           </div>
 
@@ -176,17 +193,17 @@ export default function SingleEntryForm({ categories, onAddTransaction, onNaviga
           <div className="form-group" style={{ marginBottom: '1.25rem' }}>
             <label className="form-label">Auto-Assigned Type</label>
             <div>
-              <span className={type === 'Cr' ? 'badge badge-cr' : 'badge badge-dr'} style={{ fontSize: '0.875rem', padding: '0.375rem 0.875rem' }}>
+              <span className={type === 'Cr' ? 'badge badge-cr' : 'badge badge-dr'} style={{ fontSize: '0.8125rem', padding: '0.375rem 0.75rem' }}>
                 {type === 'Cr' ? 'Credit (Cr) - Income' : 'Debit (Dr) - Expense'}
               </span>
             </div>
           </div>
 
           {/* Amount & Date Picker Grid */}
-          <div className="grid-2" style={{ gap: '1rem' }}>
+          <div className="grid-2">
             <div className="form-group">
               <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
-                <DollarSign size={15} />
+                <DollarSign size={14} />
                 <span>Amount (₹)</span>
               </label>
               <input
@@ -203,12 +220,12 @@ export default function SingleEntryForm({ categories, onAddTransaction, onNaviga
 
             <div className="form-group">
               <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
-                <Calendar size={15} />
+                <Calendar size={14} />
                 <span>Date (Future dates blocked)</span>
               </label>
               <input
                 type="date"
-                max={todayStr} // Blocks future dates in native HTML datepicker calendar
+                max={todayStr}
                 value={date}
                 onChange={handleDateChange}
                 className="form-control"
@@ -220,7 +237,7 @@ export default function SingleEntryForm({ categories, onAddTransaction, onNaviga
           {/* Notes Field */}
           <div className="form-group">
             <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
-              <FileText size={15} />
+              <FileText size={14} />
               <span>Notes / Description (Optional)</span>
             </label>
             <input
@@ -233,13 +250,13 @@ export default function SingleEntryForm({ categories, onAddTransaction, onNaviga
           </div>
 
           {/* Action Buttons */}
-          <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
+          <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.25rem', flexWrap: 'wrap' }}>
             <button
               type="submit"
               className={type === 'Cr' ? 'btn btn-success' : 'btn btn-danger'}
-              style={{ flex: 1, padding: '0.75rem' }}
+              style={{ flex: 1, padding: '0.625rem 1rem' }}
             >
-              <PlusCircle size={18} />
+              <PlusCircle size={17} />
               <span>Add Record</span>
             </button>
             <button

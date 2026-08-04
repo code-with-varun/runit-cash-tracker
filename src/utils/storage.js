@@ -144,6 +144,23 @@ export function logoutUser() {
   localStorage.removeItem(STORAGE_KEYS.ACTIVE_USER);
 }
 
+// PIN Storage Helpers
+export function getStoredPin() {
+  const user = getCurrentUser();
+  if (!user) return null;
+  return localStorage.getItem(`cashtracker_pin_${user.id}`);
+}
+
+export function setStoredPin(pin) {
+  const user = getCurrentUser();
+  if (!user) return;
+  if (pin) {
+    localStorage.setItem(`cashtracker_pin_${user.id}`, pin);
+  } else {
+    localStorage.removeItem(`cashtracker_pin_${user.id}`);
+  }
+}
+
 // User-Scoped Storage Helpers
 function getUserCategoriesKey(userId) {
   return `cashtracker_categories_${userId}`;
@@ -282,4 +299,3 @@ export function resetToSampleData() {
     localStorage.setItem(getUserTransactionsKey(user.id), JSON.stringify(DEFAULT_TRANSACTIONS));
   }
 }
-

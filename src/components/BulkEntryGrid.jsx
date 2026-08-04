@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { TableProperties, Plus, Trash2, Upload, FileSpreadsheet, CheckCircle2, AlertCircle } from 'lucide-react';
+import { TableProperties, Plus, Trash2, Upload, FileSpreadsheet, Download, CheckCircle2, AlertCircle, Eye } from 'lucide-react';
 import { getTodayString } from '../utils/storage';
-import { parseTransactionsExcel } from '../utils/excel';
+import { parseTransactionsExcel, downloadBulkEntryTemplate } from '../utils/excel';
 
 export default function BulkEntryGrid({ categories, onAddBulkTransactions, onNavigate }) {
   const todayStr = getTodayString();
+
+  const crCategories = categories ? categories.filter((c) => c.type === 'Cr') : [];
+  const drCategories = categories ? categories.filter((c) => c.type === 'Dr') : [];
 
   const createBlankRow = () => {
     const firstCat = categories && categories.length > 0 ? categories[0] : { id: 'cat_general', name: 'General', type: 'Dr' };
@@ -22,6 +25,7 @@ export default function BulkEntryGrid({ categories, onAddBulkTransactions, onNav
   const [rows, setRows] = useState([createBlankRow(), createBlankRow(), createBlankRow()]);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [isStagedFromFile, setIsStagedFromFile] = useState(false);
 
   const handleAddRow = () => {
     setRows([...rows, createBlankRow()]);
@@ -102,7 +106,8 @@ export default function BulkEntryGrid({ categories, onAddBulkTransactions, onNav
     }
 
     onAddBulkTransactions(validRows);
-    setSuccess(`Successfully imported ${validRows.length} transactions into storage!`);
+    setSuccess(`Successfully committed ${validRows.length} reviewed transactions to database!`);
+    setIsStagedFromFile(false);
     setRows([createBlankRow(), createBlankRow(), createBlankRow()]);
 
     setTimeout(() => {
@@ -110,6 +115,7 @@ export default function BulkEntryGrid({ categories, onAddBulkTransactions, onNav
     }, 4000);
   };
 
+  // Upload Excel file and load rows into UI grid state for review
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -117,48 +123,57 @@ export default function BulkEntryGrid({ categories, onAddBulkTransactions, onNav
     try {
       const parsed = await parseTransactionsExcel(file, categories);
       if (parsed.length === 0) {
-        setError('No valid transactions found in uploaded file.');
+        setError('No valid transaction rows found in uploaded file.');
         return;
       }
-      onAddBulkTransactions(parsed);
-      setSuccess(`Successfully imported ${parsed.length} transactions from Excel file!`);
+      // Populate UI table grid with parsed rows for manual review
+      setRows(parsed);
+      setIsStagedFromFile(true);
+      setSuccess(`Loaded ${parsed.length} rows from file into the grid for review! Inspect values below and click "Submit Bulk Import" to save to DB.`);
+      setError('');
       e.target.value = '';
     } catch (err) {
-      setError(`Failed to parse Excel file: ${err.message}`);
+      setError(`Failed to parse file: ${err.message}`);
     }
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
       
       {/* Header Banner */}
       <div className="glass-card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.875rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div style={{
-              width: '42px',
-              height: '42px',
-              borderRadius: '12px',
+              width: '40px',
+              height: '40px',
+              borderRadius: '10px',
               background: 'var(--primary-brand-bg)',
               color: 'var(--primary-brand)',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              flexShrink: 0
             }}>
-              <TableProperties size={22} />
+              <TableProperties size={20} />
             </div>
             <div>
-              <h2 style={{ fontSize: '1.25rem', margin: 0 }}>Bulk Transaction Entry Grid</h2>
-              <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', margin: 0 }}>
-                Interactive multi-line entry grid & Excel (.xlsx / .csv) file import.
+              <h2 style={{ fontSize: '1.125rem', margin: 0 }}>Bulk Entry Grid & Review</h2>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>
+                Download template, import file for UI review, edit rows, and submit.
               </p>
             </div>
           </div>
 
-          {/* Excel File Upload Button */}
-          <div>
-            <label className="btn btn-secondary btn-sm" style={{ cursor: 'pointer' }}>
-              <Upload size={16} />
+          {/* Action Buttons: Download Template & Import File */}
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <button onClick={downloadBulkEntryTemplate} className="btn btn-secondary btn-sm" title="Download Excel Template file">
+              <Download size={15} />
+              <span>Download Excel Template</span>
+            </button>
+
+            <label className="btn btn-primary btn-sm" style={{ cursor: 'pointer' }}>
+              <Upload size={15} />
               <span>Import Excel / CSV</span>
               <input
                 type="file"
@@ -171,20 +186,40 @@ export default function BulkEntryGrid({ categories, onAddBulkTransactions, onNav
         </div>
       </div>
 
+      {/* Staged Review Alert Banner */}
+      {isStagedFromFile && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.625rem',
+          padding: '0.75rem 1rem',
+          borderRadius: '10px',
+          background: 'rgba(59, 130, 246, 0.15)',
+          border: '1px solid rgba(59, 130, 246, 0.35)',
+          color: 'var(--text-primary)',
+          fontSize: '0.8125rem'
+        }}>
+          <Eye size={18} color="var(--primary-brand)" style={{ flexShrink: 0 }} />
+          <div>
+            <strong>Review Staged Data:</strong> File contents are loaded into the grid below. You can edit any date, category, amount, or notes directly before clicking <strong>Submit Bulk Import</strong>.
+          </div>
+        </div>
+      )}
+
       {/* Notifications */}
       {error && (
         <div style={{
           display: 'flex',
           alignItems: 'center',
           gap: '0.5rem',
-          padding: '0.75rem 1rem',
+          padding: '0.625rem 0.875rem',
           borderRadius: '8px',
           background: 'var(--accent-dr-bg)',
           border: '1px solid var(--accent-dr-border)',
           color: 'var(--accent-dr)',
-          fontSize: '0.875rem'
+          fontSize: '0.8125rem'
         }}>
-          <AlertCircle size={18} />
+          <AlertCircle size={16} />
           <span>{error}</span>
         </div>
       )}
@@ -194,36 +229,36 @@ export default function BulkEntryGrid({ categories, onAddBulkTransactions, onNav
           display: 'flex',
           alignItems: 'center',
           gap: '0.5rem',
-          padding: '0.75rem 1rem',
+          padding: '0.625rem 0.875rem',
           borderRadius: '8px',
           background: 'var(--accent-cr-bg)',
           border: '1px solid var(--accent-cr-border)',
           color: 'var(--accent-cr)',
-          fontSize: '0.875rem'
+          fontSize: '0.8125rem'
         }}>
-          <CheckCircle2 size={18} />
+          <CheckCircle2 size={16} />
           <span>{success}</span>
         </div>
       )}
 
       {/* Interactive Spreadsheet Table Grid */}
-      <div className="glass-card" style={{ padding: '1rem' }}>
+      <div className="glass-card" style={{ padding: '0.75rem' }}>
         <div className="table-responsive">
           <table className="custom-table">
             <thead>
               <tr>
-                <th style={{ width: '40px' }}>#</th>
-                <th style={{ minWidth: '140px' }}>Date</th>
-                <th style={{ minWidth: '180px' }}>Category</th>
-                <th style={{ minWidth: '100px' }}>Type</th>
-                <th style={{ minWidth: '140px' }}>Amount (₹)</th>
-                <th style={{ minWidth: '200px' }}>Notes</th>
-                <th style={{ width: '60px', textAlign: 'center' }}>Action</th>
+                <th style={{ width: '36px' }}>#</th>
+                <th style={{ minWidth: '130px' }}>Date</th>
+                <th style={{ minWidth: '160px' }}>Category</th>
+                <th style={{ minWidth: '90px' }}>Type</th>
+                <th style={{ minWidth: '120px' }}>Amount (₹)</th>
+                <th style={{ minWidth: '180px' }}>Notes</th>
+                <th style={{ width: '50px', textAlign: 'center' }}>Action</th>
               </tr>
             </thead>
             <tbody>
               {rows.map((row, idx) => (
-                <tr key={row.id}>
+                <tr key={row.id || idx}>
                   <td style={{ fontWeight: '600', color: 'var(--text-muted)' }}>{idx + 1}</td>
                   
                   {/* Date Input */}
@@ -231,26 +266,39 @@ export default function BulkEntryGrid({ categories, onAddBulkTransactions, onNav
                     <input
                       type="date"
                       max={todayStr}
-                      value={row.date}
+                      value={row.date || ''}
                       onChange={(e) => handleRowChange(idx, 'date', e.target.value)}
                       className="form-control"
-                      style={{ padding: '0.375rem 0.625rem', fontSize: '0.8125rem' }}
+                      style={{ padding: '0.3rem 0.5rem', fontSize: '0.8125rem', minHeight: '34px' }}
                     />
                   </td>
 
-                  {/* Category Dropdown */}
+                  {/* Category Dropdown with Grouping */}
                   <td>
                     <select
-                      value={row.categoryId}
+                      value={row.categoryId || (categories.length > 0 ? categories[0].id : '')}
                       onChange={(e) => handleRowChange(idx, 'categoryId', e.target.value)}
                       className="form-control"
-                      style={{ padding: '0.375rem 0.625rem', fontSize: '0.8125rem' }}
+                      style={{ padding: '0.3rem 0.5rem', fontSize: '0.8125rem', minHeight: '34px' }}
                     >
-                      {categories.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name}
-                        </option>
-                      ))}
+                      {crCategories.length > 0 && (
+                        <optgroup label="🟢 Credit (Income)">
+                          {crCategories.map((c) => (
+                            <option key={c.id} value={c.id}>
+                              {c.name}
+                            </option>
+                          ))}
+                        </optgroup>
+                      )}
+                      {drCategories.length > 0 && (
+                        <optgroup label="🔴 Debit (Expense)">
+                          {drCategories.map((c) => (
+                            <option key={c.id} value={c.id}>
+                              {c.name}
+                            </option>
+                          ))}
+                        </optgroup>
+                      )}
                     </select>
                   </td>
 
@@ -270,7 +318,7 @@ export default function BulkEntryGrid({ categories, onAddBulkTransactions, onNav
                       value={row.amount}
                       onChange={(e) => handleRowChange(idx, 'amount', e.target.value)}
                       className="form-control"
-                      style={{ padding: '0.375rem 0.625rem', fontSize: '0.8125rem', fontWeight: '600' }}
+                      style={{ padding: '0.3rem 0.5rem', fontSize: '0.8125rem', fontWeight: '600', minHeight: '34px' }}
                     />
                   </td>
 
@@ -279,10 +327,10 @@ export default function BulkEntryGrid({ categories, onAddBulkTransactions, onNav
                     <input
                       type="text"
                       placeholder="Notes..."
-                      value={row.notes}
+                      value={row.notes || ''}
                       onChange={(e) => handleRowChange(idx, 'notes', e.target.value)}
                       className="form-control"
-                      style={{ padding: '0.375rem 0.625rem', fontSize: '0.8125rem' }}
+                      style={{ padding: '0.3rem 0.5rem', fontSize: '0.8125rem', minHeight: '34px' }}
                     />
                   </td>
 
@@ -291,10 +339,10 @@ export default function BulkEntryGrid({ categories, onAddBulkTransactions, onNav
                     <button
                       onClick={() => handleRemoveRow(idx)}
                       className="btn btn-ghost btn-sm"
-                      style={{ color: 'var(--accent-dr)', padding: '0.25rem' }}
+                      style={{ color: 'var(--accent-dr)', padding: '0.2rem', minHeight: 'auto' }}
                       title="Remove Row"
                     >
-                      <Trash2 size={16} />
+                      <Trash2 size={15} />
                     </button>
                   </td>
                 </tr>
@@ -304,19 +352,19 @@ export default function BulkEntryGrid({ categories, onAddBulkTransactions, onNav
         </div>
 
         {/* Action Controls */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
           <button onClick={handleAddRow} className="btn btn-secondary btn-sm">
-            <Plus size={16} />
+            <Plus size={15} />
             <span>Add Row</span>
           </button>
 
-          <div style={{ display: 'flex', gap: '0.75rem' }}>
-            <button onClick={() => onNavigate('dashboard')} className="btn btn-ghost">
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <button onClick={() => onNavigate('dashboard')} className="btn btn-ghost btn-sm">
               Cancel
             </button>
-            <button onClick={handleSubmitBulk} className="btn btn-primary">
-              <FileSpreadsheet size={16} />
-              <span>Submit Bulk Import</span>
+            <button onClick={handleSubmitBulk} className="btn btn-primary btn-sm">
+              <FileSpreadsheet size={15} />
+              <span>Submit Bulk Import ({rows.filter(r => r.amount).length} Rows)</span>
             </button>
           </div>
         </div>

@@ -67,35 +67,36 @@ export default function CategoryManager({
   const drCategories = categories.filter((c) => c.type === 'Dr');
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
       
       {/* Banner */}
       <div className="glass-card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.875rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div style={{
-              width: '42px',
-              height: '42px',
-              borderRadius: '12px',
+              width: '40px',
+              height: '40px',
+              borderRadius: '10px',
               background: 'var(--primary-brand-bg)',
               color: 'var(--primary-brand)',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              flexShrink: 0
             }}>
-              <Tags size={22} />
+              <Tags size={20} />
             </div>
             <div>
-              <h2 style={{ fontSize: '1.25rem', margin: 0 }}>Category & Type Management</h2>
-              <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', margin: 0 }}>
-                Configure custom income (Cr) and expense (Dr) category classifications.
+              <h2 style={{ fontSize: '1.125rem', margin: 0 }}>Category & Type Management</h2>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>
+                Configure custom income (Cr) and expense (Dr) categories.
               </p>
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
             <label className="btn btn-secondary btn-sm" style={{ cursor: 'pointer' }}>
-              <Upload size={16} />
+              <Upload size={15} />
               <span>Import Excel</span>
               <input
                 type="file"
@@ -105,7 +106,7 @@ export default function CategoryManager({
               />
             </label>
             <button onClick={handleExportExcel} className="btn btn-secondary btn-sm">
-              <Download size={16} />
+              <Download size={15} />
               <span>Export Categories (.xlsx)</span>
             </button>
           </div>
@@ -118,14 +119,14 @@ export default function CategoryManager({
           display: 'flex',
           alignItems: 'center',
           gap: '0.5rem',
-          padding: '0.75rem 1rem',
+          padding: '0.625rem 0.875rem',
           borderRadius: '8px',
           background: 'var(--accent-dr-bg)',
           border: '1px solid var(--accent-dr-border)',
           color: 'var(--accent-dr)',
-          fontSize: '0.875rem'
+          fontSize: '0.8125rem'
         }}>
-          <AlertCircle size={18} />
+          <AlertCircle size={16} />
           <span>{error}</span>
         </div>
       )}
@@ -135,23 +136,23 @@ export default function CategoryManager({
           display: 'flex',
           alignItems: 'center',
           gap: '0.5rem',
-          padding: '0.75rem 1rem',
+          padding: '0.625rem 0.875rem',
           borderRadius: '8px',
           background: 'var(--accent-cr-bg)',
           border: '1px solid var(--accent-cr-border)',
           color: 'var(--accent-cr)',
-          fontSize: '0.875rem'
+          fontSize: '0.8125rem'
         }}>
-          <CheckCircle2 size={18} />
+          <CheckCircle2 size={16} />
           <span>{success}</span>
         </div>
       )}
 
       {/* Add New Category Form */}
       <div className="glass-card">
-        <h3 style={{ fontSize: '1.125rem', marginBottom: '1rem' }}>Add New Category</h3>
-        <form onSubmit={handleAddSubmit} style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-          <div className="form-group" style={{ flex: 1, minWidth: '200px', margin: 0 }}>
+        <h3 style={{ fontSize: '1rem', marginBottom: '0.875rem' }}>Add New Category</h3>
+        <form onSubmit={handleAddSubmit} style={{ display: 'flex', gap: '0.875rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+          <div className="form-group" style={{ flex: '1 1 200px', margin: 0 }}>
             <label className="form-label">Category Name</label>
             <input
               type="text"
@@ -163,7 +164,7 @@ export default function CategoryManager({
             />
           </div>
 
-          <div className="form-group" style={{ width: '180px', margin: 0 }}>
+          <div className="form-group" style={{ flex: '1 1 160px', margin: 0 }}>
             <label className="form-label">Type (Cr / Dr)</label>
             <select
               value={type}
@@ -175,8 +176,8 @@ export default function CategoryManager({
             </select>
           </div>
 
-          <button type="submit" className="btn btn-primary">
-            <Plus size={18} />
+          <button type="submit" className="btn btn-primary" style={{ height: '40px' }}>
+            <Plus size={16} />
             <span>Add Category</span>
           </button>
         </form>
@@ -186,11 +187,11 @@ export default function CategoryManager({
       <div className="grid-2">
         {/* Credit Categories List */}
         <div className="glass-card" style={{ borderTop: '4px solid var(--accent-cr)' }}>
-          <h3 style={{ fontSize: '1.125rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <h3 style={{ fontSize: '1rem', marginBottom: '0.875rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <span>Credit Categories (Cr)</span>
             <span className="badge badge-cr">{crCategories.length}</span>
           </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
             {crCategories.map((c) => (
               <div
                 key={c.id}
@@ -198,20 +199,21 @@ export default function CategoryManager({
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  padding: '0.625rem 0.875rem',
+                  padding: '0.5rem 0.75rem',
                   background: 'var(--bg-input)',
                   borderRadius: '8px',
-                  border: '1px solid var(--border-color)'
+                  border: '1px solid var(--border-color)',
+                  fontSize: '0.875rem'
                 }}
               >
                 <span style={{ fontWeight: '500' }}>{c.name}</span>
                 <button
                   onClick={() => onDeleteCategory(c.id)}
                   className="btn btn-ghost btn-sm"
-                  style={{ color: 'var(--accent-dr)', padding: '0.25rem' }}
+                  style={{ color: 'var(--accent-dr)', padding: '0.2rem', minHeight: 'auto' }}
                   title="Delete Category"
                 >
-                  <Trash2 size={15} />
+                  <Trash2 size={14} />
                 </button>
               </div>
             ))}
@@ -220,11 +222,11 @@ export default function CategoryManager({
 
         {/* Debit Categories List */}
         <div className="glass-card" style={{ borderTop: '4px solid var(--accent-dr)' }}>
-          <h3 style={{ fontSize: '1.125rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <h3 style={{ fontSize: '1rem', marginBottom: '0.875rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <span>Debit Categories (Dr)</span>
             <span className="badge badge-dr">{drCategories.length}</span>
           </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
             {drCategories.map((c) => (
               <div
                 key={c.id}
@@ -232,20 +234,21 @@ export default function CategoryManager({
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  padding: '0.625rem 0.875rem',
+                  padding: '0.5rem 0.75rem',
                   background: 'var(--bg-input)',
                   borderRadius: '8px',
-                  border: '1px solid var(--border-color)'
+                  border: '1px solid var(--border-color)',
+                  fontSize: '0.875rem'
                 }}
               >
                 <span style={{ fontWeight: '500' }}>{c.name}</span>
                 <button
                   onClick={() => onDeleteCategory(c.id)}
                   className="btn btn-ghost btn-sm"
-                  style={{ color: 'var(--accent-dr)', padding: '0.25rem' }}
+                  style={{ color: 'var(--accent-dr)', padding: '0.2rem', minHeight: 'auto' }}
                   title="Delete Category"
                 >
-                  <Trash2 size={15} />
+                  <Trash2 size={14} />
                 </button>
               </div>
             ))}
