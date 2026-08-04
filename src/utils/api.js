@@ -1,6 +1,6 @@
 import * as LocalStorage from './storage';
 
-const API_BASE = '/api';
+const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 // Helper for fetch API with fallback to LocalStorage
 async function fetchWithFallback(url, options = {}, fallbackFn) {

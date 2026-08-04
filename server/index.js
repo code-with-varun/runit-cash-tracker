@@ -13,7 +13,13 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/cashtracker';
 
-app.use(cors());
+// Allow Cross-Origin Resource Sharing for Vercel, Localhost & Custom Domains
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
 
 // Initial Seed Data
@@ -62,10 +68,13 @@ const DEFAULT_TRANSACTIONS = [
   },
 ];
 
-// Database Connection & Seeding
+// Database Connection & Seeding Cache for Serverless
+let isConnected = false;
 async function connectDB() {
+  if (isConnected && mongoose.connection.readyState === 1) return;
   try {
     await mongoose.connect(MONGODB_URI);
+    isConnected = true;
     console.log(`Connected to MongoDB Atlas / Database: ${mongoose.connection.name}`);
 
     // Seed default categories if empty
@@ -83,11 +92,16 @@ async function connectDB() {
     }
   } catch (err) {
     console.error('MongoDB Atlas Connection Error:', err.message);
-    console.log('Running server with memory fallback until MongoDB URI is configured in .env');
   }
 }
 
 connectDB();
+
+// Middleware to ensure DB connection before handling requests
+app.use(async (req, res, next) => {
+  await connectDB();
+  next();
+});
 
 // API Health Endpoint
 app.get('/api/health', (req, res) => {
@@ -166,7 +180,7 @@ app.post('/api/categories', async (req, res) => {
 
 app.post('/api/categories/bulk', async (req, res) => {
   try {
-    const categories = req.body; // Array of categories
+    const categories = req.body;
     const results = [];
     for (const cat of categories) {
       const existing = await Category.findOne({ name: cat.name });
@@ -302,6 +316,10 @@ app.post('/api/reset', async (req, res) => {
   }
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Cash Tracker Express Server listening on http://0.0.0.0:${PORT}`);
-});
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Cash Tracker Express Server listening on http://0.0.0.0:${PORT}`);
+  });
+}
+
+export default app;
