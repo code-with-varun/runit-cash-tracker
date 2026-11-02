@@ -1,10 +1,16 @@
-import React, { useState } from 'react';
-import { User, Lock, LogIn, UserPlus, AlertCircle, ShieldCheck } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { User, Lock, LogIn, UserPlus, AlertCircle, ShieldCheck, X } from 'lucide-react';
 import { loginUserAPI, registerUserAPI } from '../utils/api';
 import { saveUsers, getUsers } from '../utils/storage';
+import brandIcon from '../assets/branding/money-matrix-icon.png';
+import GoogleSignInButton from './GoogleSignInButton';
 
-export default function AuthModal({ onAuthSuccess }) {
-  const [mode, setMode] = useState('login'); // 'login' | 'register'
+export default function AuthModal({ onAuthSuccess, initialMode = 'login', onClose }) {
+  const [mode, setMode] = useState(initialMode); // 'login' | 'register'
+
+  useEffect(() => {
+    setMode(initialMode);
+  }, [initialMode]);
 
   // Login State
   const [loginUsername, setLoginUsername] = useState('');
@@ -31,12 +37,16 @@ export default function AuthModal({ onAuthSuccess }) {
       const res = await loginUserAPI(loginUsername, loginPassword);
       if (res && res.success) {
         // Cache user in localStorage for active session
+        localStorage.setItem('moneymatrix_active_user', res.user.id);
         localStorage.setItem('cashtracker_active_user', res.user.id);
         const currentUsers = getUsers();
-        if (!currentUsers.some((u) => u.id === res.user.id)) {
+        const existingIdx = currentUsers.findIndex((u) => u.id === res.user.id);
+        if (existingIdx >= 0) {
+          currentUsers[existingIdx] = { ...currentUsers[existingIdx], ...res.user };
+        } else {
           currentUsers.push(res.user);
-          saveUsers(currentUsers);
         }
+        saveUsers(currentUsers);
         onAuthSuccess(res.user);
       } else {
         setError(res ? res.error : 'Invalid login credentials.');
@@ -72,12 +82,16 @@ export default function AuthModal({ onAuthSuccess }) {
       });
       if (res && res.success) {
         // Cache user in localStorage for active session
+        localStorage.setItem('moneymatrix_active_user', res.user.id);
         localStorage.setItem('cashtracker_active_user', res.user.id);
         const currentUsers = getUsers();
-        if (!currentUsers.some((u) => u.id === res.user.id)) {
+        const existingIdx = currentUsers.findIndex((u) => u.id === res.user.id);
+        if (existingIdx >= 0) {
+          currentUsers[existingIdx] = { ...currentUsers[existingIdx], ...res.user };
+        } else {
           currentUsers.push(res.user);
-          saveUsers(currentUsers);
         }
+        saveUsers(currentUsers);
         onAuthSuccess(res.user);
       } else {
         setError(res ? res.error : 'Registration failed.');
@@ -91,31 +105,51 @@ export default function AuthModal({ onAuthSuccess }) {
 
   return (
     <div className="modal-overlay" style={{ background: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(8px)', zIndex: 1000 }}>
-      <div className="modal-content glass-card" style={{ maxWidth: '440px', width: '92%', padding: '1.75rem' }}>
+      <div className="modal-content glass-card" style={{ maxWidth: '440px', width: '92%', padding: '1.75rem', position: 'relative' }}>
+        
+        {/* Close Button */}
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="btn btn-ghost btn-sm"
+            style={{
+              position: 'absolute',
+              top: '1rem',
+              right: '1rem',
+              borderRadius: '50%',
+              width: '32px',
+              height: '32px',
+              padding: 0
+            }}
+            title="Close"
+          >
+            <X size={18} />
+          </button>
+        )}
         
         {/* Header Icon */}
-        <div style={{
-          width: '56px',
-          height: '56px',
-          borderRadius: '16px',
-          background: 'linear-gradient(135deg, #10b981 0%, #3b82f6 100%)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: '#ffffff',
-          margin: '0 auto 1rem auto',
-          boxShadow: '0 8px 20px rgba(16, 185, 129, 0.3)'
-        }}>
-          <ShieldCheck size={28} />
+        <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
+          <img
+            src={brandIcon}
+            alt="Money Matrix"
+            style={{
+              width: '64px',
+              height: '64px',
+              borderRadius: '18px',
+              boxShadow: '0 8px 24px rgba(0, 37, 112, 0.45), 0 0 16px rgba(16, 185, 129, 0.25)',
+              display: 'inline-block',
+              objectFit: 'cover'
+            }}
+          />
         </div>
 
-        <h2 style={{ fontSize: '1.35rem', fontWeight: '700', textAlign: 'center', marginBottom: '0.25rem' }}>
-          {mode === 'login' ? 'Welcome Back' : 'Create an Account'}
+        <h2 style={{ fontSize: '1.45rem', fontWeight: '800', textAlign: 'center', marginBottom: '0.25rem', letterSpacing: '-0.02em' }}>
+          {mode === 'login' ? 'Sign in to Money Matrix' : 'Join Money Matrix'}
         </h2>
         <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', textAlign: 'center', marginBottom: '1.25rem' }}>
           {mode === 'login'
-            ? 'Sign in to access your financial records across devices'
-            : 'Register your account to sync cash tracker data with MongoDB Atlas'}
+            ? 'Access your personal cash flow, ledgers, and financial analytics'
+            : 'Create your Money Matrix account to securely track income and expenses'}
         </p>
 
         {/* Auth Mode Tabs */}
@@ -163,6 +197,25 @@ export default function AuthModal({ onAuthSuccess }) {
             <span>{error}</span>
           </div>
         )}
+
+        {/* GOOGLE SIGN IN FEATURE FOR LOGIN & REGISTER */}
+        <GoogleSignInButton
+          mode={mode}
+          onAuthSuccess={(user) => {
+            localStorage.setItem('moneymatrix_active_user', user.id);
+            localStorage.setItem('cashtracker_active_user', user.id);
+            const currentUsers = getUsers();
+            const existingIdx = currentUsers.findIndex((u) => u.id === user.id);
+            if (existingIdx >= 0) {
+              currentUsers[existingIdx] = { ...currentUsers[existingIdx], ...user };
+            } else {
+              currentUsers.push(user);
+            }
+            saveUsers(currentUsers);
+            onAuthSuccess(user);
+          }}
+          onError={(err) => setError(err)}
+        />
 
         {/* LOGIN FORM */}
         {mode === 'login' && (

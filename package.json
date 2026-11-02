@@ -1,13 +1,16 @@
 {
-  "name": "cash-tracker",
+  "name": "money-matrix",
   "private": true,
   "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host",
+    "api": "C:\\xampp\\php\\php.exe -S 127.0.0.1:5000 api/router.php",
+    "api:php": "php -S 127.0.0.1:5000 api/router.php",
+    "api:xampp": "C:\\xampp\\php\\php.exe -S 127.0.0.1:5000 api/router.php",
+    "dev:full": "concurrently \"npm run dev\" \"npm run api:xampp\"",
     "server": "node server/index.js",
     "server:dev": "nodemon server/index.js",
-    "dev:full": "concurrently \"npm run dev\" \"npm run server:dev\"",
     "build": "vite build",
     "preview": "vite preview",
     "predeploy": "npm run build",

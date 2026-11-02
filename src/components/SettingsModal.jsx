@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Settings, Download, Upload, RefreshCw, X, CheckCircle2, AlertCircle, User } from 'lucide-react';
+import { Settings, Download, Upload, RefreshCw, X, CheckCircle2, AlertCircle, User, Database } from 'lucide-react';
 import { exportFullDataJSON, importFullDataJSON, resetToSampleData, getCurrentUser } from '../utils/storage';
+import { resetDataAPI } from '../utils/api';
 
 export default function SettingsModal({
   isOpen,
@@ -19,7 +20,7 @@ export default function SettingsModal({
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `CashTracker_Backup_${currentUser?.username || 'user'}_${new Date().toISOString().slice(0, 10)}.json`;
+    link.download = `MoneyMatrix_Backup_${currentUser?.username || 'user'}_${new Date().toISOString().slice(0, 10)}.json`;
     link.click();
     URL.revokeObjectURL(url);
     setMsg('Full JSON backup downloaded.');
@@ -43,12 +44,17 @@ export default function SettingsModal({
     reader.readAsText(file);
   };
 
-  const handleResetSample = () => {
-    if (window.confirm('Reset all categories and transactions for your account to initial sample dataset?')) {
-      resetToSampleData();
-      onDataReset();
-      setMsg('Reset to sample dataset completed.');
-      setTimeout(() => setMsg(''), 3000);
+  const handleResetSample = async () => {
+    if (window.confirm('Reset all categories and transactions for your account in MySQL database?')) {
+      try {
+        await resetDataAPI();
+        resetToSampleData();
+        onDataReset();
+        setMsg('Reset to sample dataset completed in MySQL database.');
+        setTimeout(() => setMsg(''), 3000);
+      } catch (err) {
+        setError('Failed to reset MySQL dataset.');
+      }
     }
   };
 
@@ -114,8 +120,9 @@ export default function SettingsModal({
             <p style={{ fontSize: '0.875rem', color: 'var(--text-primary)', margin: '0 0 0.25rem 0', fontWeight: '600' }}>
               {currentUser.name} <span style={{ color: 'var(--text-muted)', fontWeight: '400' }}>({currentUser.username})</span>
             </p>
-            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>
-              Account data is safely isolated and stored in your browser's localStorage.
+            <p style={{ fontSize: '0.78125rem', color: 'var(--accent-cr)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.375rem', fontWeight: '500' }}>
+              <Database size={14} />
+              <span>Connected to MySQL Database (<code>money_matrix_db</code>)</span>
             </p>
           </div>
         )}

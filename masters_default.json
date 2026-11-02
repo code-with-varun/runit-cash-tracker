@@ -1,0 +1,38 @@
+{
+  "budgets": [
+    { "code": "B001", "name": "Home Budget", "description": "Household, groceries, provisions, cleaning, home upkeep", "category_group": "LIVING" },
+    { "code": "B002", "name": "Food Budget", "description": "Dining out, snacks, beverages, social meals, food delivery", "category_group": "LIVING" },
+    { "code": "B003", "name": "Travel Budget", "description": "Daily commute, petrol, tolls, vehicle transit, outstation trips", "category_group": "MOBILITY" },
+    { "code": "B004", "name": "Utility Budget", "description": "Electricity, water, cooking gas, telecom, broadband, routine services", "category_group": "SERVICES" },
+    { "code": "B005", "name": "Healthcare Budget", "description": "Medical consultations, pharmacy, diagnostic tests, treatments", "category_group": "LIVING" },
+    { "code": "B006", "name": "Lifestyle Budget", "description": "Entertainment, gadgets, movies, recreation, fashion, hobbies", "category_group": "LIFESTYLE" },
+    { "code": "B007", "name": "Investment Budget", "description": "Equity, mutual funds, SIP, fixed deposits, gold, long-term wealth", "category_group": "WEALTH" },
+    { "code": "B008", "name": "Emergency Budget", "description": "Contingencies, urgent hospital visits, unforeseen repairs", "category_group": "PROTECTION" }
+  ],
+  "cost_centers": [
+    { "code": "CC001", "name": "Self", "description": "Personal expenses and consumption directly by self" },
+    { "code": "CC002", "name": "Parents", "description": "Expenses consumed for or by parents / elders" },
+    { "code": "CC003", "name": "Home", "description": "Expenses consumed for household property and maintenance" },
+    { "code": "CC004", "name": "Vehicle", "description": "Expenses consumed by car, bike, mobility assets" },
+    { "code": "CC005", "name": "Education", "description": "Expenses consumed for learning, courses, certifications" },
+    { "code": "CC006", "name": "Health", "description": "Expenses consumed for personal and family health treatments" },
+    { "code": "CC007", "name": "Business", "description": "Expenses consumed for professional, freelance, client work" },
+    { "code": "CC008", "name": "Travel", "description": "Expenses consumed for vacation trips, tours, logistics" }
+  ],
+  "profit_centers": [
+    { "code": "PC001", "name": "Salary", "description": "Income from primary regular employment and salary payroll" },
+    { "code": "PC002", "name": "Freelancing", "description": "Income from side consulting, freelance contracts, client projects" },
+    { "code": "PC003", "name": "Investments", "description": "Income from dividends, capital gains, interest returns" },
+    { "code": "PC004", "name": "Business", "description": "Income from commercial activities and enterprise sales" },
+    { "code": "PC005", "name": "Rental Income", "description": "Income from leased property, real estate, equipment" },
+    { "code": "PC006", "name": "Cashback & Rewards", "description": "Income from transaction cashbacks, rewards, referral bonuses" }
+  ],
+  "projects": [
+    { "code": "PR001", "name": "Goa Trip", "description": "Leisure vacation and travel trip" },
+    { "code": "PR002", "name": "Money Matrix", "description": "Personal finance and enterprise dashboard software" },
+    { "code": "PR003", "name": "Bike Purchase", "description": "Capital asset acquisition and down payment" },
+    { "code": "PR004", "name": "Home Renovation", "description": "Interior improvements, painting, furniture upgrading" },
+    { "code": "PR005", "name": "AIOS", "description": "AI operating system and automation development" }
+  ]
+}
+
