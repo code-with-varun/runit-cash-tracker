@@ -95,6 +95,7 @@ export default function Sidebar({
     {
       title: 'DATA INSERTIONS & SYSTEM',
       items: [
+        { id: 'export-complete-excel', label: 'Complete Excel Backup', icon: FileSpreadsheet, pill: '.xlsx' },
         { id: 'system-reset', label: 'System Reset', icon: RotateCcw, pill: 'Empty' },
         ...(currentUser?.role === 'superadmin' ? [
           { id: 'superadmin', label: 'Super Admin Console', icon: ShieldCheck, badge: 'Admin' }
@@ -104,6 +105,12 @@ export default function Sidebar({
   ];
 
   const handleNavClick = (itemId) => {
+    if (itemId === 'export-complete-excel') {
+      if (onExportCompleteExcel) {
+        onExportCompleteExcel();
+      }
+      return;
+    }
     if (itemId === 'system-reset') {
       if (onOpenReset) {
         onOpenReset();

@@ -123,6 +123,23 @@ export default function App() {
     refreshData();
   };
 
+  
+  const handleExportCompleteExcel = async () => {
+    try {
+      const filename = await exportCompleteMasterExcel({
+        currentUser,
+        transactions,
+        accounts,
+        categories,
+        masters
+      });
+      alert(`🎉 Complete Excel Backup generated and downloaded successfully!\n\nFile: ${filename}\n\nAll database tables and masters (User Profile, 36-Column Ledger, Accounts, Taxonomy, Budgets, Cost Centers, Profit Centers, Projects) have been exported into separate sheets.`);
+    } catch (err) {
+      console.error('Complete export error:', err);
+      alert('Failed to generate complete backup: ' + err.message);
+    }
+  };
+
   const handleLogout = () => {
     logoutUser();
     setCurrentUser(null);
@@ -234,6 +251,7 @@ export default function App() {
         accounts={accounts}
         activeAccount={activeAccount}
         setActiveAccount={setActiveAccount}
+        onExportCompleteExcel={handleExportCompleteExcel}
       />
 
       {/* Right Main Working Area */}
@@ -254,6 +272,7 @@ export default function App() {
           onOpenReset={() => setIsResetModalOpen(true)}
           currentUser={currentUser}
           onLogout={handleLogout}
+          onExportCompleteExcel={handleExportCompleteExcel}
         />
 
         {/* Dynamic ERP Module View (Smooth Independent Scroll) */}

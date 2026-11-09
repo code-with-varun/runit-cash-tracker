@@ -353,7 +353,7 @@ export default function MasterTransactionsView({
               </span>
             </div>
             <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', margin: '0.25rem 0 0' }}>
-              Consolidate all accounts, verify line-item taxonomy classifications, and freeze audited records with standard banking headers.
+              Consolidated read-only master repository for all accounts. Use this view for global search, auditing, analytics, and exporting reports. (Line-by-line verification and daily locks are handled in Daily Validation).
             </p>
           </div>
 
@@ -461,41 +461,7 @@ export default function MasterTransactionsView({
               />
             )}
 
-            {/* Batch Audit Actions */}
-            {selectedTxIds.length > 0 && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', background: 'var(--bg-input)', padding: '2px 6px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                <span style={{ fontSize: '0.6875rem', fontWeight: '700', color: 'var(--text-muted)' }}>
-                  {selectedTxIds.length} Selected:
-                </span>
-                <button
-                  onClick={() => handleBatchAudit('verified')}
-                  disabled={loadingAction}
-                  className="btn btn-primary btn-sm"
-                  style={{ fontSize: '0.6875rem', height: '26px', padding: '0 0.45rem' }}
-                >
-                  <Check size={11} />
-                  <span>Verify</span>
-                </button>
-                <button
-                  onClick={() => handleBatchAudit('frozen')}
-                  disabled={loadingAction}
-                  className="btn btn-success btn-sm"
-                  style={{ fontSize: '0.6875rem', height: '26px', padding: '0 0.45rem' }}
-                >
-                  <Lock size={11} />
-                  <span>Freeze</span>
-                </button>
-                <button
-                  onClick={() => handleBatchAudit('draft')}
-                  disabled={loadingAction}
-                  className="btn btn-secondary btn-sm"
-                  style={{ fontSize: '0.6875rem', height: '26px', padding: '0 0.45rem' }}
-                >
-                  <Unlock size={11} />
-                  <span>Draft</span>
-                </button>
-              </div>
-            )}
+
           </div>
         }
       />
@@ -530,9 +496,7 @@ export default function MasterTransactionsView({
                   />
                 </th>
 
-                <th style={{ background: '#334155', color: '#fff', padding: '0.65rem 0.75rem', textAlign: 'center' }}>
-                  Action
-                </th>
+
 
                 {/* 1. Date group */}
                 <th {...getSortHeaderProps('date_group')} style={{ background: '#475569', color: '#fff', padding: '0.65rem 0.75rem' }}>
@@ -693,18 +657,7 @@ export default function MasterTransactionsView({
                         />
                       </td>
 
-                      {/* Action Button */}
-                      <td style={{ padding: '0.55rem 0.75rem', textAlign: 'center' }}>
-                        <button
-                          onClick={() => handleToggleRowAudit(tx)}
-                          className={`btn btn-sm ${isFrozen ? 'btn-secondary' : isVerified ? 'btn-success' : 'btn-primary'}`}
-                          style={{ padding: '0.2rem 0.5rem', fontSize: '0.6875rem' }}
-                          title={isFrozen ? "Unlock Record" : isVerified ? "Freeze & Lock" : "Verify Taxonomy"}
-                        >
-                          {isFrozen ? <Unlock size={11} /> : isVerified ? <Lock size={11} /> : <Check size={11} />}
-                          <span>{isFrozen ? 'Unlock' : isVerified ? 'Lock' : 'Verify'}</span>
-                        </button>
-                      </td>
+
 
                       {/* 1. Date group */}
                       <td style={{ padding: '0.55rem 0.75rem', fontWeight: '700', color: 'var(--text-secondary)' }}>

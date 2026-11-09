@@ -13,7 +13,8 @@ import {
   RotateCcw,
   ShieldCheck,
   CheckCircle2,
-  Sparkles
+  Sparkles,
+  FileSpreadsheet
 } from 'lucide-react';
 
 export default function TopHeader({
@@ -29,7 +30,8 @@ export default function TopHeader({
   onOpenSettings,
   onOpenReset,
   currentUser,
-  onLogout
+  onLogout,
+  onExportCompleteExcel
 }) {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const userMenuRef = useRef(null);
@@ -170,6 +172,28 @@ export default function TopHeader({
           </span>
         </button>
 
+        {/* Complete Excel Backup Quick Action */}
+        <button
+          onClick={onExportCompleteExcel}
+          className="btn btn-secondary btn-sm"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.45rem',
+            padding: '0.32rem 0.8rem',
+            borderRadius: '9999px',
+            fontSize: '0.75rem',
+            fontWeight: '700',
+            color: 'var(--primary-brand)',
+            background: 'rgba(59, 130, 246, 0.08)',
+            border: '1px solid rgba(59, 130, 246, 0.35)',
+            cursor: 'pointer'
+          }}
+          title="Export Complete Multi-Sheet Excel Backup (User Profile, 36-Col Ledger, Accounts, Taxonomy, Budgets, Cost Centers, Profit Centers, Projects)"
+        >
+          <FileSpreadsheet size={15} />
+          <span className="hidden-sm">Complete Backup (.xlsx)</span>
+        </button>
 
         {/* User Profile Pill & Dropdown (Top-Right) */}
         {currentUser && (
@@ -276,6 +300,26 @@ export default function TopHeader({
                 >
                   {theme === 'dark' ? <Sun size={15} color="#f59e0b" /> : <Moon size={15} color="#6366f1" />}
                   <span>{theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setIsUserMenuOpen(false);
+                    if (onExportCompleteExcel) onExportCompleteExcel();
+                  }}
+                  className="btn btn-ghost btn-sm"
+                  style={{
+                    width: '100%',
+                    justifyContent: 'flex-start',
+                    gap: '0.5rem',
+                    padding: '0.5rem 0.75rem',
+                    fontSize: '0.8125rem',
+                    borderRadius: '8px',
+                    color: 'var(--primary-brand)'
+                  }}
+                >
+                  <FileSpreadsheet size={15} />
+                  <span>Export Complete Excel (.xlsx)</span>
                 </button>
 
                 <button

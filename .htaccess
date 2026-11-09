@@ -1,0 +1,20 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Let API requests pass directly through to api/
+    RewriteRule ^api(/.*)?$ - [L]
+
+    # Map frontend assets from dist/ folder
+    RewriteRule ^assets/(.*)$ dist/assets/$1 [L]
+    RewriteRule ^branding/(.*)$ dist/branding/$1 [L]
+    RewriteRule ^favicon\.png$ dist/favicon.png [L]
+    RewriteRule ^logo\.png$ dist/logo.png [L]
+
+    # Serve directly if file or folder exists
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Fallback to index.php for SPA routing
+    RewriteRule ^ index.php [L]
+</IfModule>
